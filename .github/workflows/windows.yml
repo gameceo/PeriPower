@@ -44,7 +44,7 @@ jobs:
           $env:PATH = "C:/Qt/6.8.3/msvc2022_64/bin;$env:PATH"
           ctest --test-dir build -C Release --output-on-failure
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          cmake --install build --config Release --prefix dist
+          cmake --install build --config Release --prefix "$PWD/dist"
           exit $LASTEXITCODE
       - uses: actions/upload-artifact@v4
         with:

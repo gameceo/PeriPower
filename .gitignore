@@ -7,3 +7,4 @@ __pycache__/
 /external/headsetcontrol/
 integrations/streamdeck/com.gameceo.peripower.sdPlugin/bin/
 integrations/streamdeck/*.streamDeckPlugin
+integrations/streamdeck/com.gameceo.peripower.sdPlugin/logs/

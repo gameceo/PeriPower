@@ -35,6 +35,7 @@ export function display(d: Device | undefined, channel: Channel, online: boolean
   const status = d.stale ? '缓存' : !d.connected ? '离线' : charging ? '充电' : '';
   return { name: d.displayName, value: `${value}${status ? ' · ' + status : ''}`,
     color: d.stale || !d.connected ? '#64748b' : charging ? '#38bdf8' :
+      (p === null || p === undefined) && (channel !== 'percentage' || d.level === 'unknown') ? '#64748b' :
       (typeof p === 'number' ? p <= threshold : ['empty','low'].includes(d.level)) ? '#f87171' : '#4ade80' };
 }
 export function svg(d: ReturnType<typeof display>) {

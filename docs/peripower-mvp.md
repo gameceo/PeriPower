@@ -16,8 +16,11 @@ Logitech PRO X 2 LIGHTSPEED. Other upstream device adapters remain available but
 - Razer one-shot feature-report query: raw 143, 56%, charging false.
 - HeadsetControl official 4.2.0: headset initially unavailable; after user powered it on,
   BATTERY_AVAILABLE, 32%. This validates the helper path, not the complete native application.
-- MX Master 3S: Bluetooth node enumerated; live GATT battery query not yet verified.
+- MX Master 3S: first live GATT query returned disconnected/unreachable; awaiting a connected retest.
 - Node 24.11.1; installed Stream Deck executable 7.6.0.23012.
+- Native cloud build: MSVC 19.44, Qt 6.8.3, Windows SDK 10.0.26100.0 compiled successfully;
+  rpc_model CTest passed. First packaging attempt failed because Qt requires an absolute install prefix;
+  workflow now uses an absolute path. Packaging retest pending.
 - Local C++ build not yet run: Qt/MSVC/SDK unavailable; automatic approval blocked the
   official Build Tools installer invocation even after user permission.
 
@@ -32,7 +35,7 @@ cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=C:/Qt/
 cmake --build build --config Release --parallel
 $env:PATH = "C:/Qt/6.8.3/msvc2022_64/bin;$env:PATH"
 ctest --test-dir build -C Release --output-on-failure
-cmake --install build --config Release --prefix dist
+cmake --install build --config Release --prefix "$PWD/dist"
 ./dist/bin/PeriPower.exe --websocket_server --port 19211
 ```
 
@@ -75,7 +78,7 @@ The original application's settings, autostart name, mutex and history directory
 
 ## Acceptance still requiring real hardware
 
-- Native build and Qt tests; complete desktop panel -> RPC -> physical Stream Deck flow.
+- Native packaged runtime on this PC; complete desktop panel -> RPC -> physical Stream Deck flow.
 - Razer charge cable, sleep/wake, receiver unplug/replug, Synapse coexistence.
 - PRO X 2 on/off, charging, G HUB coexistence, long-run trend and repeated reconnects.
 - MX Master 3S current Bluetooth battery service and mouse sleep/wake.
