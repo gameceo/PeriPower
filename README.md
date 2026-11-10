@@ -1,3 +1,11 @@
+# PeriPower
+
+Windows 外设电量桌面面板与 Elgato Stream Deck 插件，基于 BatteryMonitor Fork。
+
+当前开发与验证状态、构建命令和设备范围见 [PeriPower MVP](docs/peripower-mvp.md)。下方保留上游说明，其中“已验证”指上游作者验证，并非本机验证。
+
+---
+
 # BatteryMonitor
 
 [English](README.en.md) | 简体中文
@@ -100,8 +108,8 @@ BatteryMonitor 是一个 Windows 桌面电量监控工具，用来在一个窗�
 
 - Windows
 - Qt 6.5 或更高版本
-- CMake 3.19 或更高版本
-- 支持 C++17 的 MSVC 工具链
+- CMake 3.25 或更高版本
+- 支持 C++20 的 MSVC 工具链
 - Windows SDK，需包含 Desktop C++ Apps / cppwinrt 头文件
 
 `external/hidapi` 目录中已包含当前项目使用的 Windows 版 hidapi 预编译文件。构建后会自动把 `hidapi.dll` 拷贝到输出目录。

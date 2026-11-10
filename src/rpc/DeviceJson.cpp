@@ -73,7 +73,7 @@ QString signature(const BatteryDevice &device)
     // 仅纳入"客户端可见且会影响展示/判断"的字段。
     // 刻意排除 lastSeenMsecs（每轮都变，会破坏去重）。
     // 含 rateMilliwatts：订阅端（StreamDock 等）需要实时感知功率变化。
-    return QString("%1|%2|%3|%4|%5|%6|%7|%8|%9|%10|%11|%12|%13|%14|%15|%16|%17|%18|%19")
+    return DeviceSettings::alias(QString::fromStdWString(device.id)) + QChar(0x1f) + QString("%1|%2|%3|%4|%5|%6|%7|%8|%9|%10|%11|%12|%13|%14|%15|%16|%17|%18|%19")
         .arg(QString::fromStdWString(device.id))
         .arg(QString::fromStdWString(device.name))
         .arg(static_cast<int>(device.type))

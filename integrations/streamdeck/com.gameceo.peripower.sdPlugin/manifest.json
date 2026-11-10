@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "UUID": "com.gameceo.peripower",
+  "Name": "PeriPower",
+  "Author": "gameceo",
+  "Description": "Display local peripheral battery readings from PeriPower.",
+  "Version": "0.1.0.0",
+  "SDKVersion": 2,
+  "CodePath": "bin/plugin.js",
+  "Icon": "imgs/plugin",
+  "Category": "PeriPower",
+  "CategoryIcon": "imgs/category",
+  "Software": {
+    "MinimumVersion": "7.1"
+  },
+  "Nodejs": {
+    "Version": "24"
+  },
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Actions": [
+    {
+      "UUID": "com.gameceo.peripower.battery",
+      "Name": "外设电量",
+      "Icon": "imgs/category",
+      "Tooltip": "显示所选外设电量，按下刷新。",
+      "Controllers": [
+        "Keypad"
+      ],
+      "PropertyInspectorPath": "ui/device-battery.html",
+      "States": [
+        {
+          "Image": "imgs/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    }
+  ]
+}

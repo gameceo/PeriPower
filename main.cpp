@@ -1,9 +1,14 @@
 #include "mainwindow.h"
+#include "src/ui/DesktopPanel.h"
+#include <QMenuBar>
+#include <QAction>
+#include <QSettings>
 #include "src/core/BatteryManager.h"
 #include "src/history/BatteryHistoryStore.h"
 #include "src/providers/hid/AsusMouseHidProvider.h"
 #include "src/providers/hid/AsusRogHidProvider.h"
 #include "src/providers/hid/LogitechHidProvider.h"
+#include "src/providers/hid/HeadsetControlProvider.h"
 #include "src/providers/hid/MchoseHidProvider.h"
 #include "src/providers/hid/RazerHidProvider.h"
 #include "src/providers/bluetooth/AirPodsProvider.h"
@@ -36,8 +41,8 @@ namespace
     // 切换语言时由 retranslate() 卸载并重新 load + install。
     QTranslator *g_translator = nullptr;
 
-    constexpr wchar_t kSingleInstanceMutexName[] = L"Local\\BatteryMonitor.SingleInstance";
-    constexpr wchar_t kShowMainWindowMessageName[] = L"BatteryMonitor.ShowMainWindow";
+    constexpr wchar_t kSingleInstanceMutexName[] = L"Local\\PeriPower.SingleInstance";
+    constexpr wchar_t kShowMainWindowMessageName[] = L"PeriPower.ShowMainWindow";
 
     class SingleInstanceGuard
     {
@@ -227,8 +232,8 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
-    a.setApplicationName(QStringLiteral("BatteryMonitor"));
-    a.setOrganizationName(QStringLiteral("BatteryMonitor"));
+    a.setApplicationName(QStringLiteral("PeriPower"));
+    a.setOrganizationName(QStringLiteral("gameceo"));
     a.setApplicationVersion(QStringLiteral(APP_VERSION_STRING));
     QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/app.png")));
     // 关闭窗口后仍允许托盘图标保活（不设置的话某些平台会退出应用）。
@@ -279,6 +284,7 @@ int main(int argc, char *argv[])
     manager.addProvider(std::make_unique<AsusRogHidProvider>());
     manager.addProvider(std::make_unique<AsusMouseHidProvider>());
     manager.addProvider(std::make_unique<LogitechHidProvider>());
+    manager.addProvider(std::make_unique<HeadsetControlProvider>());
     manager.addProvider(std::make_unique<MchoseHidProvider>());
     manager.addProvider(std::make_unique<RazerHidProvider>());
     manager.addProvider(std::make_unique<VgnHidProvider>());
@@ -343,6 +349,15 @@ int main(int argc, char *argv[])
 
     MainWindow w(&manager, &historyStore);
     w.setRpcServer(rpcServer);
+    DesktopPanel desktopPanel;
+    QObject::connect(&manager, &BatteryManager::devicesUpdated,
+                     &desktopPanel, &DesktopPanel::setDevices);
+    auto *panelAction = w.menuBar()->addAction(QStringLiteral("桌面电量面板"));
+    QObject::connect(panelAction, &QAction::triggered, &desktopPanel, [&desktopPanel] {
+        desktopPanel.show(); desktopPanel.raise();
+        QSettings().setValue("desktopPanel/visible", true);
+    });
+    if (QSettings().value("desktopPanel/visible", false).toBool()) desktopPanel.show();
     ShowMainWindowEventFilter showMainWindowEventFilter(&w, singleInstance.showMainWindowMessage());
     a.installNativeEventFilter(&showMainWindowEventFilter);
 

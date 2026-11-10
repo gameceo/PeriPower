@@ -1,0 +1,38 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>PeriPower</title>
+<style>body{background:#282828;color:#eee;font:13px sans-serif;padding:12px}label{display:block;margin:14px 0 5px}select,input,button{box-sizing:border-box;width:100%;padding:7px;background:#383838;color:white;border:1px solid #555;border-radius:4px}small{color:#bbb}#status{margin:12px 0;color:#aab}</style>
+<div id="status">正在连接插件…</div>
+<label for="port">采集服务端口（所有按键共用）</label><input id="port" type="number" min="1024" max="65535" value="19211">
+<label for="token">鉴权令牌（未设置则留空）</label><input id="token" type="password" autocomplete="off">
+<button id="connection">保存连接配置</button>
+<label for="device">设备</label><select id="device"><option value="">请选择</option></select>
+<button id="reload">刷新设备列表</button>
+<label for="channel">电量通道</label><select id="channel"><option value="percentage">总览</option><option value="leftPercent">左耳</option><option value="rightPercent">右耳</option><option value="casePercent">充电盒</option></select>
+<label for="threshold">低电量颜色阈值（%）</label><input id="threshold" type="number" min="0" max="100" value="20">
+<p><small>请先启动 PeriPower，并开启本机 WebSocket 服务（默认端口 19211）。设备 ID 变化后需要重新选择。</small></p>
+<script>
+let ws, context, settings={}, actionId;
+const $=id=>document.getElementById(id);
+function send(event,payload){if(ws?.readyState===1)ws.send(JSON.stringify({event,context,payload}));}
+function requestDevices(){send('sendToPlugin',{event:'devices'});}
+function apply(){ $('channel').value=settings.channel||'percentage';$('threshold').value=settings.threshold??20; }
+function connectElgatoStreamDeckSocket(port,uuid,registerEvent,info,actionInfo){
+  context=uuid;const a=JSON.parse(actionInfo);settings=a.payload.settings||{};actionId=a.action;apply();
+  ws=new WebSocket('ws://127.0.0.1:'+port);
+  ws.onopen=()=>{ws.send(JSON.stringify({event:registerEvent,uuid}));ws.send(JSON.stringify({event:'getGlobalSettings',context}));requestDevices();};
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data);}catch{return;}
+    if(m.event==='didReceiveSettings'){settings=m.payload.settings||{};apply();}
+    if(m.event==='didReceiveGlobalSettings'){$('port').value=m.payload.settings.port||19211;$('token').value=m.payload.settings.token||'';}
+    if(m.event==='sendToPropertyInspector'){
+      const p=m.payload;$('status').textContent=p.online?'采集服务已连接':'采集服务未连接';
+      $('device').replaceChildren(new Option('请选择',''));
+      for(const d of p.devices||[])$('device').add(new Option(d.name,d.id));
+      if(settings.deviceId&&!Array.from($('device').options).some(o=>o.value===settings.deviceId))$('device').add(new Option('原设备未找到（需重新选择）',settings.deviceId));
+      $('device').value=settings.deviceId||'';
+    }
+  };
+}
+function save(){settings={...settings,deviceId:$('device').value,channel:$('channel').value,threshold:Math.max(0,Math.min(100,Number($('threshold').value)||0))};send('setSettings',settings);}
+for(const id of ['device','channel','threshold'])$(id).onchange=save;
+$('reload').onclick=requestDevices;
+$('connection').onclick=()=>{const port=Number($('port').value);if(!Number.isInteger(port)||port<1024||port>65535)return;send('setGlobalSettings',{port,token:$('token').value});setTimeout(requestDevices,500);};
+</script></html>

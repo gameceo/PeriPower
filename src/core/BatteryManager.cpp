@@ -408,6 +408,7 @@ BatteryManager::~BatteryManager()
 void BatteryManager::addProvider(std::unique_ptr<IBatteryProvider> provider)
 {
     if (provider) {
+        m_providerNames.append(QString::fromStdWString(provider->displayName()));
         m_providers.push_back(std::move(provider));
     }
 }

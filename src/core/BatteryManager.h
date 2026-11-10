@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QSet>
 #include <QThread>
+#include <QStringList>
 #include <memory>
 #include <vector>
 
@@ -47,6 +48,8 @@ public:
 
     // 请求立即刷新（异步，触发一次 worker 循环）。
     void refreshNow();
+    void republish() { publishCurrentDevices({}); }
+    QStringList providerNames() const { return m_providerNames; }
 
     // 设备类别的人类可读名称，供 UI 翻译 / 展示。
     static QString typeLabel(BatteryDevice::Type type);
@@ -92,6 +95,7 @@ private:
     void filterUnpairedAirPods(std::vector<BatteryDevice> &raw);
 
     std::vector<std::unique_ptr<IBatteryProvider>> m_providers;
+    QStringList m_providerNames;
     std::vector<ProviderRuntime> m_providerRuntimes;
     QTimer *m_timer = nullptr;
 

@@ -23,7 +23,7 @@ set(APP_VERSION_RC "${APP_VERSION_GENERATED_DIR}/app_version.rc")
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Network WebSockets Sql LinguistTools)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 qt_standard_project_setup(I18N_SOURCE_LANGUAGE en)
 
 # ---------------------------------------------------------------------------
@@ -65,6 +65,8 @@ set(APP_QRC_FILES
 set(APP_RESOURCE_FILES)
 
 set(APP_PROVIDER_FILES
+    src/providers/hid/HeadsetControlProvider.cpp
+    src/providers/hid/HeadsetControlProvider.h
     src/providers/bluetooth/BluetoothProvider.cpp
     src/providers/bluetooth/BluetoothProvider.h
     src/providers/bluetooth/ClassicBluetoothProvider.cpp
@@ -106,6 +108,8 @@ qt_add_executable(BatteryMonitor
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
+    src/ui/DesktopPanel.cpp
+    src/ui/DesktopPanel.h
     # 核心抽象层（BatteryDevice / IBatteryProvider / BatteryManager）。
     src/core/BatteryDevice.h
     src/core/IBatteryProvider.h
@@ -163,6 +167,7 @@ add_custom_target(generate_app_version ALL
 )
 add_dependencies(BatteryMonitor generate_app_version)
 
+set_target_properties(BatteryMonitor PROPERTIES OUTPUT_NAME PeriPower)
 target_include_directories(BatteryMonitor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(BatteryMonitor PRIVATE ${APP_VERSION_GENERATED_DIR})
 
@@ -255,3 +260,21 @@ qt_generate_deploy_app_script(
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
 install(SCRIPT ${deploy_script})
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/external/headsetcontrol/headsetcontrol.exe")
+    install(DIRECTORY external/headsetcontrol/ DESTINATION ${CMAKE_INSTALL_BINDIR}/helpers)
+    add_custom_command(TARGET BatteryMonitor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/external/headsetcontrol $<TARGET_FILE_DIR:BatteryMonitor>/helpers)
+endif()
+
+include(CTest)
+if(BUILD_TESTING)
+    find_package(Qt6 6.5 REQUIRED COMPONENTS Test)
+    qt_add_executable(peripower_rpc_tests
+        tests/RpcModelTest.cpp src/rpc/DeviceJson.cpp src/rpc/JsonRpc.cpp util/DeviceSettings.cpp
+        src/providers/hid/HeadsetControlProvider.cpp)
+    target_include_directories(peripower_rpc_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(peripower_rpc_tests PRIVATE Qt6::Core Qt6::Test)
+    add_test(NAME rpc_model COMMAND peripower_rpc_tests)
+endif()

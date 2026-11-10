@@ -45,7 +45,7 @@ QString tokenFromUrl(const QUrl &url)
 } // namespace
 
 RpcServer::RpcServer(BatteryManager *manager, QObject *parent)
-    : QObject(parent), m_manager(manager)
+    : QObject(parent), m_startedAtMs(QDateTime::currentMSecsSinceEpoch()), m_manager(manager)
 {
     // 连接 BatteryManager 的设备更新信号，维护最新快照 + 变化检测推送。
     // devicesUpdated 在主线程触发，RpcServer 也在主线程，无需加锁。
@@ -293,13 +293,12 @@ QJsonObject RpcServer::methodSystemPing(Session & /*s*/, const QJsonObject &para
 QJsonObject RpcServer::methodSystemGetInfo(Session & /*s*/, const QJsonObject & /*params*/)
 {
     QJsonObject r;
-    r["name"] = QStringLiteral("BatteryMonitor");
+    r["name"] = QStringLiteral("PeriPower");
     r["version"] = QCoreApplication::applicationVersion();
     r["apiVersion"] = QStringLiteral("1.0");
     r["platform"] = QStringLiteral("windows");
-    static const qint64 startedAt = QDateTime::currentMSecsSinceEpoch();
-    r["startedAt"] = startedAt;
-    r["uptime"] = QDateTime::currentMSecsSinceEpoch() - startedAt;
+    r["startedAt"] = m_startedAtMs;
+    r["uptime"] = QDateTime::currentMSecsSinceEpoch() - m_startedAtMs;
     r["refreshIntervalMs"] = AppSettings::refreshInterval();
     // capabilities 与 main.cpp 注册的 provider 对应。
     QJsonArray caps = {
@@ -307,6 +306,7 @@ QJsonObject RpcServer::methodSystemGetInfo(Session & /*s*/, const QJsonObject & 
         QStringLiteral("airpods"), QStringLiteral("xbox"),
         QStringLiteral("hid")};
     r["capabilities"] = caps;
+    r["providers"] = m_manager ? QJsonArray::fromStringList(m_manager->providerNames()) : QJsonArray();
     return r;
 }
 
@@ -442,7 +442,7 @@ QJsonObject RpcServer::buildAppSettingsObject() const
     rpc["enabled"] = AppSettings::rpcEnabled();
     rpc["host"] = AppSettings::rpcHost();
     rpc["port"] = AppSettings::rpcPort();
-    rpc["token"] = AppSettings::rpcToken(); // 注意：会回显 token
+    rpc["tokenConfigured"] = !AppSettings::rpcToken().isEmpty();
     r["rpc"] = rpc;
     return r;
 }
@@ -592,6 +592,7 @@ QJsonObject RpcServer::methodSettingsDeviceSet(Session & /*s*/, const QJsonObjec
     const QString alertId = alertSettingsIdForDeviceId(id);
     if (params.contains(QStringLiteral("alias"))) {
         DeviceSettings::setAlias(id, params.value(QStringLiteral("alias")).toString());
+        if (m_manager) m_manager->republish();
     }
     if (params.contains(QStringLiteral("trayVisible"))) {
         bool v;

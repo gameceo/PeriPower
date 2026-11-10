@@ -91,7 +91,7 @@ private:
     std::string formatLine(const std::wstring &message, Level level);
 
     std::wstring m_filePath;
-    std::wstring m_dirName = L"BatteryMonitor";
+    std::wstring m_dirName = L"PeriPower";
     std::wstring m_fileName = L"BatteryMonitor.log";
     unsigned long long m_maxBytes = 1024 * 1024; // 1MB 上限
     Level m_minLevel = Level::Info;

@@ -1,0 +1,16 @@
+{
+  "name": "peripower-streamdeck", "version": "0.1.0", "private": true, "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && rollup -c", "watch": "rollup -c -w",
+    "test": "tsx --test tests/*.test.ts",
+    "validate": "streamdeck validate com.gameceo.peripower.sdPlugin",
+    "pack": "streamdeck pack com.gameceo.peripower.sdPlugin"
+  },
+  "dependencies": { "@elgato/streamdeck": "3.0.4", "ws": "8.18.3" },
+  "devDependencies": {
+    "@elgato/cli": "1.10.4", "@rollup/plugin-node-resolve": "16.0.3",
+    "@rollup/plugin-commonjs": "29.0.0", "@rollup/plugin-typescript": "12.3.0",
+    "@types/node": "24.10.1", "@types/ws": "8.18.1", "rollup": "4.53.2",
+    "tslib": "2.8.1", "tsx": "4.20.6", "typescript": "5.9.3"
+  }
+}

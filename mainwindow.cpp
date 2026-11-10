@@ -1547,6 +1547,7 @@ void MainWindow::onDeviceAliasEditingFinished()
     rebuildTable(m_devices);
     refreshDetailPage();
     updateTray(m_devices);
+    m_manager->republish();
 }
 
 void MainWindow::onDeviceKeepCacheChanged(bool checked)
@@ -2029,7 +2030,7 @@ void MainWindow::retranslateUi()
     }
 
     // 设置窗口标题（也会随 tr 刷新）。
-    setWindowTitle(tr("Battery Monitor"));
+    setWindowTitle(QStringLiteral("PeriPower"));
 
     // 重译动态内容：表格 + 详情页（其中所有可见文本都已用 tr 包装）。
     rebuildTable(m_devices);

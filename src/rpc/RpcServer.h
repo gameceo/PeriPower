@@ -109,6 +109,7 @@ private:
     // 推送 refresh.completed（目前在 onDevicesUpdated 内复用）。
     void broadcastRefreshCompleted();
 
+    qint64 m_startedAtMs = 0;
     BatteryManager *m_manager;
     std::unique_ptr<QWebSocketServer> m_server;
     QString m_host;
